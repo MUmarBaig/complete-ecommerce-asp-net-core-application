@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +15,7 @@ using System.Threading.Tasks;
 using Tickets.Data;
 using Tickets.Data.Cart;
 using Tickets.Data.Services;
+using Tickets.Models;
 
 namespace Tickets
 {
@@ -36,12 +39,20 @@ namespace Tickets
             services.AddScoped<IProducerService, ProducerService>();
             services.AddScoped<ICinemaService, CinemaService>();
             services.AddScoped<IMovieService, MovieService>();
-            
+            services.AddScoped<IOrderService, OrderService>();
+
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped(sc => ShoppingCart.GetShoppingCart(sc));
+            //Authentication and authorization
 
+            services.AddIdentity<ApplicationUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
+            services.AddMemoryCache();
             services.AddSession();
+            services.AddAuthentication(option =>
+            {
+                option.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            });
             services.AddControllersWithViews();
         }
 
@@ -64,6 +75,10 @@ namespace Tickets
             app.UseRouting();
             app.UseSession();
 
+            //authentication and authorizatuon
+            app.UseAuthentication();
+            app.UseAuthorization();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
@@ -75,6 +90,7 @@ namespace Tickets
 
             //seed database
             AppDbInitilizer.Seed(app);
+            AppDbInitilizer.SeedUserAndRolesAsync(app).Wait();
         }
     }
 }

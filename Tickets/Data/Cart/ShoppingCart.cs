@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Tickets.Models;
 
 namespace Tickets.Data.Cart
@@ -85,6 +86,14 @@ namespace Tickets.Data.Cart
             return total;
         }
 
+        public async Task ClearShoppingCartAsync()
+        {
+            var items= await _context.ShoppingCartItems.Where(a => a.ShoppingCartId == ShoppingCartId)
+                .Include(c => c.Movie)
+                .ToListAsync();
+            _context.ShoppingCartItems.RemoveRange(items);
+            await _context.SaveChangesAsync();
+        }
 
     }
 }
