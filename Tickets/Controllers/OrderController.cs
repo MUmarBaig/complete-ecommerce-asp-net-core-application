@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Tickets.Data.Cart;
 using Tickets.Data.Services;
@@ -20,8 +21,9 @@ namespace Tickets.Controllers
 
         public async Task<IActionResult> Index()
         {
-            string userId = "";
-            var orders =  await _orderService.GetOrderByUserIdAsync(userId);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string userRole = User.FindFirstValue(ClaimTypes.Role);
+            var orders =  await _orderService.GetOrderByUserIdAndRoleAsync(userId,userRole);
             return View(orders);
         }
 
@@ -62,8 +64,8 @@ namespace Tickets.Controllers
         public async Task<IActionResult> CompleteOrder()
         {
             var items = _shoppingCart.GetShoppingCartItems();
-            string userId = "";
-            string userEmailAddress = "";
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string userEmailAddress = User.FindFirstValue(ClaimTypes.Email);
 
             await _orderService.StoreOrderAsync(items,userId, userEmailAddress);
             await _shoppingCart.ClearShoppingCartAsync();

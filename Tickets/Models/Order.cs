@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Tickets.Models
 {
@@ -8,6 +9,8 @@ namespace Tickets.Models
         [Key]
         public int Id { get; set; }
         public string Email { get; set; }
+        public ApplicationUser User { get; set; }
+        [ForeignKey(nameof(UserId))]
         public string UserId { get; set; }
 
 

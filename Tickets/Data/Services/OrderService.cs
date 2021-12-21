@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Tickets.Data.Static;
 using Tickets.Models;
 
 namespace Tickets.Data.Services
@@ -13,11 +14,16 @@ namespace Tickets.Data.Services
         {
             _context = context;
         }
-        public async Task<List<Order>> GetOrderByUserIdAsync(string userId)
+        public async Task<List<Order>> GetOrderByUserIdAndRoleAsync(string userId,string userRole)
         {
             var orders = await _context.Orders.Include(a=>a.OrderItems)
                 .ThenInclude(q=>q.Movie)
-                .Where(s=>s.UserId == userId).ToListAsync();
+                .Include(n=>n.User)
+                .ToListAsync();
+            if (userRole != UserRoles.Admin)
+            {
+                orders=orders.Where(x=>x.UserId==userId).ToList(); 
+            }
             return orders;
         }
 
